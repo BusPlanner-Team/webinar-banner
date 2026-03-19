@@ -24,6 +24,18 @@
     <main class="app-layout">
         <aside class="controls-panel">
             <section class="control-group">
+                <h3>Top Bar</h3>
+                <label class="toggle-row">
+                    <input type="checkbox" id="topBarEnabled">
+                    <span>Show top bar</span>
+                </label>
+                <label>
+                    <span>Bar Text</span>
+                    <input type="text" id="topBarText" placeholder="e.g., Full Recording Inside!" value="Full Recording Inside!">
+                </label>
+            </section>
+
+            <section class="control-group">
                 <h3>Webinar Series</h3>
                 <div class="series-selector">
                     <button class="series-btn active" data-series="community" data-color="#00274C">BusPlanner Community Sessions</button>
@@ -80,8 +92,8 @@
                     <label class="color-label">
                         <span>Text</span>
                         <div class="color-input-group">
-                            <input type="color" id="textColor" value="#FFFFFF">
-                            <input type="text" class="hex-input" id="textColorHex" value="#FFFFFF" maxlength="7">
+                            <input type="color" id="textColor" value="#00274C">
+                            <input type="text" class="hex-input" id="textColorHex" value="#00274C" maxlength="7">
                         </div>
                     </label>
                 </div>
@@ -89,15 +101,15 @@
                     <label class="color-label">
                         <span>CTA Background</span>
                         <div class="color-input-group">
-                            <input type="color" id="ctaBgColor" value="#FCBA30">
-                            <input type="text" class="hex-input" id="ctaBgColorHex" value="#FCBA30" maxlength="7">
+                            <input type="color" id="ctaBgColor" value="#00274C">
+                            <input type="text" class="hex-input" id="ctaBgColorHex" value="#00274C" maxlength="7">
                         </div>
                     </label>
                     <label class="color-label">
                         <span>CTA Text</span>
                         <div class="color-input-group">
-                            <input type="color" id="ctaTextColor" value="#00274C">
-                            <input type="text" class="hex-input" id="ctaTextColorHex" value="#00274C" maxlength="7">
+                            <input type="color" id="ctaTextColor" value="#FFFFFF">
+                            <input type="text" class="hex-input" id="ctaTextColorHex" value="#FFFFFF" maxlength="7">
                         </div>
                     </label>
                 </div>

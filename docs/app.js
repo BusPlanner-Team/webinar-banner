@@ -3,9 +3,9 @@ let speakers = [{ id: 1, name: '', title: '', headshotUrl: null }];
 let activeSeries = 'community';
 
 const SERIES_CONFIG = {
-    'community': { label: 'BusPlanner Community Sessions', color: '#00274C', gradient: 'linear-gradient(135deg, #00274C 0%, #003366 50%, #004080 100%)' },
-    'university': { label: 'BusPlanner University', color: '#1B5E20', gradient: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)' },
-    'forum': { label: 'BusPlanner Forum', color: '#B71C1C', gradient: 'linear-gradient(135deg, #B71C1C 0%, #C62828 50%, #D32F2F 100%)' }
+    'community': { label: 'BusPlanner Community Sessions', color: '#00274C' },
+    'university': { label: 'BusPlanner University', color: '#1B5E20' },
+    'forum': { label: 'BusPlanner Forum', color: '#B71C1C' }
 };
 
 const QUALITY_PRESETS = { 2: 0.92, 3: 0.90, 4: 0.85 };
@@ -51,6 +51,18 @@ function getBgDataUrl() {
     return 'data:image/svg+xml,' + encodeURIComponent(getBgSvg());
 }
 
+// BusPlanner logo SVG for the banner
+function getBpLogo() {
+    return `<svg class="banner-bp-logo" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+        <rect width="38" height="38" rx="6" fill="#FCBA30" y="6"/>
+        <text x="19" y="32" text-anchor="middle" font-family="Montserrat, sans-serif" font-weight="800" font-size="22" fill="#00274C">B</text>
+        <text x="46" y="24" font-family="Montserrat, sans-serif" font-weight="800" font-size="16" fill="#00274C">BusPlanner</text>
+        <text x="46" y="24" font-family="Montserrat, sans-serif" font-weight="800" font-size="16" fill="#00274C">BusPlanner</text>
+        <text x="170" y="24" font-family="Montserrat, sans-serif" font-weight="400" font-size="6.5" fill="#00274C" baseline-shift="super">&#174;</text>
+        <text x="46" y="38" font-family="Montserrat, sans-serif" font-weight="500" font-size="7.5" fill="#00274C" letter-spacing="0.3">Student Transportation Platform</text>
+    </svg>`;
+}
+
 // ===== Initialization =====
 document.addEventListener('DOMContentLoaded', () => {
     bindInputListeners();
@@ -69,7 +81,7 @@ function bindInputListeners() {
         'webinarPlatform', 'ctaText',
         'accentColor', 'textColor', 'ctaBgColor', 'ctaTextColor',
         'titleSize', 'subtitleSize', 'detailsSize',
-        'seriesLabel'
+        'seriesLabel', 'topBarEnabled', 'topBarText'
     ];
     inputs.forEach(id => {
         const el = document.getElementById(id);
@@ -200,6 +212,8 @@ function updatePreview() {
     const platform = document.getElementById('webinarPlatform').value.trim();
     const ctaText = document.getElementById('ctaText').value.trim();
     const seriesLabel = document.getElementById('seriesLabel').value.trim();
+    const topBarEnabled = document.getElementById('topBarEnabled').checked;
+    const topBarText = document.getElementById('topBarText').value.trim();
 
     const textColor = document.getElementById('textColor').value;
     const accentColor = document.getElementById('accentColor').value;
@@ -224,6 +238,14 @@ function updatePreview() {
     const hasHeadshots = allHeadshots.length > 0;
     const displayLabel = seriesLabel || series.label;
 
+    // Top bar
+    let topBarHtml = '';
+    if (topBarEnabled && topBarText) {
+        topBarHtml = `<div class="banner-top-bar" style="background: ${series.color};">
+            <span>${escapeHtml(topBarText)}</span>
+        </div>`;
+    }
+
     // Headshots with names below
     let speakerHtml = '';
     if (hasHeadshots) {
@@ -238,42 +260,49 @@ function updatePreview() {
         speakerHtml = `<div class="banner-headshots-area">${headshotItems}</div>`;
     }
 
-    // Date/time in top-right
-    let dateTimeHtml = '';
-    if (date || time) {
-        dateTimeHtml = `<div class="banner-datetime" style="color: ${textColor};">
-            ${date ? `<div class="banner-dt-row">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>${escapeHtml(date)}</span>
-            </div>` : ''}
-            ${time ? `<div class="banner-dt-row">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>${escapeHtml(time)}</span>
-            </div>` : ''}
+    // Build details rows (date, time, platform — only if filled)
+    let detailRows = '';
+    if (date) {
+        detailRows += `<div class="banner-detail-row">
+            <svg width="${detailsSize}" height="${detailsSize}" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${escapeHtml(date)}
+        </div>`;
+    }
+    if (time) {
+        detailRows += `<div class="banner-detail-row">
+            <svg width="${detailsSize}" height="${detailsSize}" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${escapeHtml(time)}
+        </div>`;
+    }
+    if (platform) {
+        detailRows += `<div class="banner-detail-row">
+            <svg width="${detailsSize}" height="${detailsSize}" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
+            ${escapeHtml(platform)}
         </div>`;
     }
 
     preview.innerHTML = `
-        <div class="banner-inner">
+        <div class="banner-inner ${topBarEnabled && topBarText ? 'has-top-bar' : ''}">
             <div class="banner-bg" style="background-image: url('${getBgDataUrl()}'); background-size: cover;"></div>
-            <div class="banner-color-overlay" style="background: linear-gradient(135deg, ${series.color}f0 0%, ${series.color}e8 45%, ${series.color}88 65%, transparent 80%);"></div>
-            ${dateTimeHtml}
-            <div class="banner-content" style="color: ${textColor};">
-                <div class="banner-series-tag" style="color: ${accentColor};">${escapeHtml(displayLabel)}</div>
-                ${title ? `<div class="banner-title" style="font-size: ${titleSize}px;">${escapeHtml(title)}</div>` : ''}
-                ${subtitle ? `<div class="banner-subtitle" style="font-size: ${subtitleSize}px;">${escapeHtml(subtitle)}</div>` : ''}
-                <div class="banner-details" style="font-size: ${detailsSize}px;">
-                    ${platform ? `<div class="banner-detail-row">
-                        <svg width="${detailsSize}" height="${detailsSize}" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
-                        ${escapeHtml(platform)}
+            ${topBarHtml}
+            <div class="banner-body">
+                <div class="banner-content" style="color: ${textColor};">
+                    ${getBpLogo()}
+                    <div class="banner-series-tag" style="background: ${accentColor}; color: ${series.color};">
+                        ${escapeHtml(displayLabel)}
+                    </div>
+                    ${title ? `<div class="banner-title" style="font-size: ${titleSize}px;">${escapeHtml(title)}</div>` : ''}
+                    ${subtitle ? `<div class="banner-subtitle" style="font-size: ${subtitleSize}px;">${escapeHtml(subtitle)}</div>` : ''}
+                    ${detailRows ? `<div class="banner-details" style="font-size: ${detailsSize}px;">${detailRows}</div>` : ''}
+                    ${ctaText ? `<div class="banner-cta" style="background: ${ctaBgColor}; color: ${ctaTextColor};">
+                        ${escapeHtml(ctaText)}
+                        <span class="banner-cta-arrow" style="background: ${accentColor};">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${ctaBgColor}" stroke-width="3"><line x1="7" y1="12" x2="17" y2="12"/><polyline points="12 7 17 12 12 17"/></svg>
+                        </span>
                     </div>` : ''}
                 </div>
-                ${ctaText ? `<div class="banner-cta" style="background: ${ctaBgColor}; color: ${ctaTextColor};">
-                    ${escapeHtml(ctaText)}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${ctaTextColor}" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </div>` : ''}
+                ${speakerHtml}
             </div>
-            ${speakerHtml}
         </div>`;
 }
 
