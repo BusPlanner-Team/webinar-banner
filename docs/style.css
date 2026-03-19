@@ -299,6 +299,30 @@ select:focus {
     min-width: 220px;
     box-shadow: 0 2px 8px rgba(0,39,76,0.2);
 }
+/* ===== Date/Time Top-Right ===== */
+.banner-datetime {
+    position: absolute;
+    top: 14px;
+    right: 20px;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #00274C;
+    font-family: 'Montserrat', sans-serif;
+}
+.has-top-bar .banner-datetime {
+    top: 46px;
+}
+.banner-dt-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.banner-dt-row svg { flex-shrink: 0; }
 /* ===== Banner Body ===== */
 .banner-body {
     position: relative;
@@ -337,6 +361,7 @@ select:focus {
     text-transform: uppercase;
     letter-spacing: 1px;
     padding: 4px 10px;
+    white-space: nowrap;
     border-radius: 4px;
     background: #FCBA30;
     color: #00274C;

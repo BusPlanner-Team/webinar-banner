@@ -209,38 +209,46 @@ function updatePreview() {
         speakerHtml = `<div class="banner-headshots-area">${headshotItems}</div>`;
     }
 
-    // Build details rows
-    let detailRows = '';
-    if (date) {
-        detailRows += `<div class="banner-detail-row">
-            <svg width="${detailsSize}" height="${detailsSize}" viewBox="0 0 24 24" fill="none" stroke="${GOLD}" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            ${escapeHtml(date)}
-        </div>`;
-    }
-    if (time) {
-        detailRows += `<div class="banner-detail-row">
-            <svg width="${detailsSize}" height="${detailsSize}" viewBox="0 0 24 24" fill="none" stroke="${GOLD}" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ${escapeHtml(time)}
-        </div>`;
-    }
+    // Build platform row (stays in left content)
+    let platformRow = '';
     if (platform) {
-        detailRows += `<div class="banner-detail-row">
+        platformRow = `<div class="banner-detail-row">
             <svg width="${detailsSize}" height="${detailsSize}" viewBox="0 0 24 24" fill="none" stroke="${GOLD}" stroke-width="2"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
             ${escapeHtml(platform)}
         </div>`;
+    }
+
+    // Date/time block (positioned top-right)
+    let dateTimeHtml = '';
+    if (date || time) {
+        let dtRows = '';
+        if (date) {
+            dtRows += `<div class="banner-dt-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${GOLD}" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>${escapeHtml(date)}</span>
+            </div>`;
+        }
+        if (time) {
+            dtRows += `<div class="banner-dt-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${GOLD}" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>${escapeHtml(time)}</span>
+            </div>`;
+        }
+        dateTimeHtml = `<div class="banner-datetime">${dtRows}</div>`;
     }
 
     preview.innerHTML = `
         <div class="banner-inner ${topBarEnabled && topBarText ? 'has-top-bar' : ''}">
             <div class="banner-bg" style="background-image: url('${getBgDataUrl()}'); background-size: cover;"></div>
             ${topBarHtml}
+            ${dateTimeHtml}
             <div class="banner-body">
                 <div class="banner-content">
                     <img src="logo.png" class="banner-bp-logo" alt="BusPlanner">
                     ${seriesLabel ? `<div class="banner-series-tag">${escapeHtml(seriesLabel)}</div>` : ''}
                     ${title ? `<div class="banner-title" style="font-size: ${titleSize}px;">${escapeHtml(title)}</div>` : ''}
                     ${subtitle ? `<div class="banner-subtitle" style="font-size: ${subtitleSize}px;">${escapeHtml(subtitle)}</div>` : ''}
-                    ${detailRows ? `<div class="banner-details" style="font-size: ${detailsSize}px;">${detailRows}</div>` : ''}
+                    ${platformRow ? `<div class="banner-details" style="font-size: ${detailsSize}px;">${platformRow}</div>` : ''}
                     ${ctaText ? `<div class="banner-cta">
                         ${escapeHtml(ctaText)}
                         <span class="banner-cta-arrow">
