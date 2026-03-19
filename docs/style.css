@@ -287,8 +287,8 @@ select:focus {
     position: relative;
     z-index: 3;
     text-align: center;
-    padding: 8px 20px;
-    font-size: 14px;
+    padding: 7px 20px;
+    font-size: 13px;
     font-weight: 700;
     color: #FFFFFF;
     background: #00274C;
@@ -304,40 +304,44 @@ select:focus {
     position: relative;
     z-index: 1;
     flex: 1;
+    min-height: 0;
     display: flex;
     align-items: stretch;
+    overflow: hidden;
 }
 .banner-content {
     position: relative;
     z-index: 1;
-    padding: 24px 34px 28px;
+    padding: 10px 30px 6px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     max-width: 55%;
-    gap: 8px;
+    gap: 4px;
+    overflow: hidden;
     flex-shrink: 0;
     color: #00274C;
 }
 /* ===== BusPlanner Logo ===== */
 .banner-bp-logo {
-    width: 190px;
+    width: 155px;
     height: auto;
-    margin-bottom: 6px;
+    margin-bottom: 0;
 }
 /* ===== Series Tag ===== */
 .banner-series-tag {
     display: inline-block;
     align-self: flex-start;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1.2px;
-    padding: 5px 14px;
+    letter-spacing: 1px;
+    padding: 4px 10px;
     border-radius: 4px;
     background: #FCBA30;
     color: #00274C;
     box-shadow: 0 1px 3px rgba(252,186,48,0.4);
+    margin-bottom: 2px;
 }
 /* ===== Title ===== */
 .banner-title {
@@ -356,8 +360,8 @@ select:focus {
 .banner-details {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    margin-top: 8px;
+    gap: 4px;
+    margin-top: 4px;
     color: #00274C;
 }
 .banner-detail-row {
@@ -371,13 +375,13 @@ select:focus {
 .banner-cta {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px 10px 22px;
+    gap: 8px;
+    padding: 8px 10px 8px 18px;
     border-radius: 50px;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     font-family: 'Montserrat', sans-serif;
-    margin-top: 12px;
+    margin-top: 6px;
     align-self: flex-start;
     letter-spacing: 0.3px;
     background: #00274C;
