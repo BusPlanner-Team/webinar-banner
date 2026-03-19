@@ -128,7 +128,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .series-selector {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 6px;
 }
 .series-btn {
@@ -150,8 +150,7 @@ input[type="range"]::-webkit-slider-thumb {
     background: var(--navy);
     color: var(--white);
 }
-.series-btn[data-series="us-client"].active { background: #1B5E20; border-color: #1B5E20; }
-.series-btn[data-series="can-client"].active { background: #4A148C; border-color: #4A148C; }
+.series-btn[data-series="university"].active { background: #1B5E20; border-color: #1B5E20; }
 .series-btn[data-series="forum"].active { background: #B71C1C; border-color: #B71C1C; }
 .upload-zone {
     border: 2px dashed var(--gray-300);
@@ -320,7 +319,7 @@ input[type="color"] {
 }
 .banner-preview {
     width: 600px;
-    min-height: 300px;
+    height: 421px;
     background: var(--white);
     border-radius: 8px;
     box-shadow: var(--shadow-lg);
@@ -333,13 +332,13 @@ input[type="color"] {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    height: 300px;
+    height: 421px;
     color: var(--gray-400);
     font-size: 13px;
 }
 .banner-inner {
     width: 600px;
-    min-height: 300px;
+    height: 421px;
     position: relative;
     overflow: hidden;
     font-family: 'Montserrat', sans-serif;
@@ -437,6 +436,45 @@ input[type="color"] {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* ===== Headshot Upload (per-speaker) ===== */
+.headshot-upload-zone {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px dashed var(--gray-300);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--gray-500);
+    font-weight: 600;
+    transition: border-color 0.15s;
+    position: relative;
+}
+.headshot-upload-zone:hover { border-color: var(--navy); color: var(--navy); }
+.headshot-upload-label { pointer-events: none; }
+.headshot-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.headshot-clear-btn {
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.headshot-clear-btn:hover { background: rgba(0,0,0,0.8); }
+
 /* ===== Hint Text ===== */
 .hint-text {
     font-size: 11px;

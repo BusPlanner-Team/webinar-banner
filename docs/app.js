@@ -1,13 +1,11 @@
 // ===== State =====
-let currentHeadshotUrl = null;
 let currentBgImageUrl = null;
-let additionalSpeakers = [];
-let activeSeries = 'prospect';
+let speakers = [{ id: 1, name: '', title: '', headshotUrl: null }];
+let activeSeries = 'community';
 
 const SERIES_CONFIG = {
-    'prospect': { label: 'Prospect Webinar', color: '#00274C', gradient: 'linear-gradient(135deg, #00274C 0%, #003366 50%, #004080 100%)' },
-    'us-client': { label: 'US Client Session', color: '#1B5E20', gradient: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)' },
-    'can-client': { label: 'CAN Client Session', color: '#4A148C', gradient: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #7B1FA2 100%)' },
+    'community': { label: 'BusPlanner Community Sessions', color: '#00274C', gradient: 'linear-gradient(135deg, #00274C 0%, #003366 50%, #004080 100%)' },
+    'university': { label: 'BusPlanner University', color: '#1B5E20', gradient: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)' },
     'forum': { label: 'BusPlanner Forum', color: '#B71C1C', gradient: 'linear-gradient(135deg, #B71C1C 0%, #C62828 50%, #D32F2F 100%)' }
 };
 
@@ -17,11 +15,12 @@ const QUALITY_PRESETS = { 2: 0.92, 3: 0.90, 4: 0.85 };
 document.addEventListener('DOMContentLoaded', () => {
     bindInputListeners();
     bindSeriesSelector();
-    bindUploadZones();
+    bindBgUpload();
     bindColorSync();
     bindRangeLabels();
-    bindAdditionalSpeakers();
+    bindSpeakers();
     bindDownload();
+    renderSpeakers();
     updatePreview();
 });
 
@@ -29,14 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function bindInputListeners() {
     const inputs = [
         'webinarTitle', 'webinarSubtitle', 'webinarDate', 'webinarTime',
-        'webinarPlatform', 'speakerName', 'speakerTitle', 'ctaText',
+        'webinarPlatform', 'ctaText',
         'accentColor', 'textColor', 'ctaBgColor', 'ctaTextColor',
         'titleSize', 'subtitleSize', 'detailsSize', 'overlayOpacity',
         'seriesLabel'
     ];
     inputs.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('input', updatePreview);
+        if (el) {
+            el.addEventListener('input', updatePreview);
+            el.addEventListener('change', updatePreview);
+        }
     });
 }
 
@@ -54,9 +56,8 @@ function bindSeriesSelector() {
     });
 }
 
-// ===== Upload Zones =====
-function bindUploadZones() {
-    setupUpload('headshotZone', 'headshotUpload', 'headshotPreview', 'clearHeadshot', (url) => { currentHeadshotUrl = url; updatePreview(); });
+// ===== Background Upload =====
+function bindBgUpload() {
     setupUpload('bgImageZone', 'bgImageUpload', 'bgImagePreview', 'clearBgImage', (url) => { currentBgImageUrl = url; updatePreview(); });
 }
 
@@ -114,12 +115,6 @@ function bindColorSync() {
 
 // ===== Range Labels =====
 function bindRangeLabels() {
-    ['titleSize', 'subtitleSize', 'detailsSize'].forEach(id => {
-        const el = document.getElementById(id);
-        const label = document.getElementById(id + 'Val');
-        el.addEventListener('input', () => { label.textContent = el.value + 'px'; });
-    });
-    // Overlay opacity label
     const opEl = document.getElementById('overlayOpacity');
     const opLabel = document.getElementById('overlayOpacityVal');
     if (opEl && opLabel) {
@@ -127,78 +122,96 @@ function bindRangeLabels() {
     }
 }
 
-// ===== Additional Speakers =====
-function bindAdditionalSpeakers() {
+// ===== Speakers =====
+function bindSpeakers() {
     document.getElementById('addSpeakerBtn').addEventListener('click', () => {
-        const id = Date.now();
-        additionalSpeakers.push({ id, name: '', title: '', headshotUrl: null });
-        renderAdditionalSpeakers();
+        speakers.push({ id: Date.now(), name: '', title: '', headshotUrl: null });
+        renderSpeakers();
+        updatePreview();
     });
 }
 
-function renderAdditionalSpeakers() {
-    const container = document.getElementById('additionalSpeakers');
-    container.innerHTML = additionalSpeakers.map(s => `
+function renderSpeakers() {
+    const container = document.getElementById('speakersList');
+    container.innerHTML = speakers.map((s, i) => `
         <div class="speaker-entry" data-id="${s.id}">
             <div class="speaker-fields">
                 <input type="text" placeholder="Speaker name" value="${escapeHtml(s.name)}" data-field="name">
-                <input type="text" placeholder="Speaker title" value="${escapeHtml(s.title)}" data-field="title">
-                <div class="mini-upload-zone" data-id="${s.id}">
+                <input type="text" placeholder="Title / role" value="${escapeHtml(s.title)}" data-field="title">
+                <div class="headshot-upload-zone" data-id="${s.id}">
                     ${s.headshotUrl
-                        ? `<img src="${s.headshotUrl}" class="mini-upload-preview"><button class="mini-clear-btn">&times;</button>`
-                        : `<span class="mini-upload-label">+ Headshot</span>`}
+                        ? `<img src="${s.headshotUrl}" class="headshot-thumb"><button class="headshot-clear-btn">&times;</button>`
+                        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg><span class="headshot-upload-label">Upload headshot</span>`}
                     <input type="file" accept="image/*" hidden>
                 </div>
             </div>
-            <button class="remove-speaker-btn" title="Remove">&times;</button>
+            ${speakers.length > 1 ? `<button class="remove-speaker-btn" title="Remove">&times;</button>` : ''}
         </div>
     `).join('');
 
     container.querySelectorAll('.speaker-entry').forEach(entry => {
         const id = parseInt(entry.dataset.id);
+
+        // Text fields
         entry.querySelectorAll('input[type="text"]').forEach(input => {
             input.addEventListener('input', () => {
-                const speaker = additionalSpeakers.find(s => s.id === id);
+                const speaker = speakers.find(s => s.id === id);
                 if (speaker) speaker[input.dataset.field] = input.value;
                 updatePreview();
             });
         });
-        entry.querySelector('.remove-speaker-btn').addEventListener('click', () => {
-            additionalSpeakers = additionalSpeakers.filter(s => s.id !== id);
-            renderAdditionalSpeakers();
-            updatePreview();
-        });
 
-        // Mini headshot upload
-        const miniZone = entry.querySelector('.mini-upload-zone');
-        const miniInput = miniZone.querySelector('input[type="file"]');
-        const miniClear = miniZone.querySelector('.mini-clear-btn');
-
-        miniZone.addEventListener('click', (e) => {
-            if (e.target.classList.contains('mini-clear-btn')) return;
-            miniInput.click();
-        });
-        miniInput.addEventListener('change', () => {
-            if (!miniInput.files[0]) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const speaker = additionalSpeakers.find(s => s.id === id);
-                if (speaker) speaker.headshotUrl = e.target.result;
-                renderAdditionalSpeakers();
+        // Remove button
+        const removeBtn = entry.querySelector('.remove-speaker-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                speakers = speakers.filter(s => s.id !== id);
+                renderSpeakers();
                 updatePreview();
-            };
-            reader.readAsDataURL(miniInput.files[0]);
+            });
+        }
+
+        // Headshot upload
+        const zone = entry.querySelector('.headshot-upload-zone');
+        const fileInput = zone.querySelector('input[type="file"]');
+        const clearBtn = zone.querySelector('.headshot-clear-btn');
+
+        zone.addEventListener('click', (e) => {
+            if (e.target.classList.contains('headshot-clear-btn')) return;
+            fileInput.click();
         });
-        if (miniClear) {
-            miniClear.addEventListener('click', (e) => {
+        zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.style.borderColor = '#00274C'; });
+        zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = '';
+            if (e.dataTransfer.files[0]) loadHeadshot(e.dataTransfer.files[0], id);
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files[0]) loadHeadshot(fileInput.files[0], id);
+        });
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const speaker = additionalSpeakers.find(s => s.id === id);
+                const speaker = speakers.find(s => s.id === id);
                 if (speaker) speaker.headshotUrl = null;
-                renderAdditionalSpeakers();
+                renderSpeakers();
                 updatePreview();
             });
         }
     });
+}
+
+function loadHeadshot(file, speakerId) {
+    if (!file.type.startsWith('image/')) return showToast('Please upload an image file', 'error');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const speaker = speakers.find(s => s.id === speakerId);
+        if (speaker) speaker.headshotUrl = e.target.result;
+        renderSpeakers();
+        updatePreview();
+    };
+    reader.readAsDataURL(file);
 }
 
 // ===== Update Preview =====
@@ -209,8 +222,6 @@ function updatePreview() {
     const date = document.getElementById('webinarDate').value.trim();
     const time = document.getElementById('webinarTime').value.trim();
     const platform = document.getElementById('webinarPlatform').value;
-    const speakerName = document.getElementById('speakerName').value.trim();
-    const speakerTitle = document.getElementById('speakerTitle').value.trim();
     const ctaText = document.getElementById('ctaText').value.trim();
     const seriesLabel = document.getElementById('seriesLabel').value.trim();
 
@@ -225,7 +236,10 @@ function updatePreview() {
     const overlayOpacity = document.getElementById('overlayOpacity').value / 100;
     const series = SERIES_CONFIG[activeSeries];
 
-    if (!title && !date && !speakerName) {
+    const allSpeakerNames = speakers.map(s => s.name).filter(Boolean);
+    const firstSpeaker = speakers[0]?.name || '';
+
+    if (!title && !date && !firstSpeaker) {
         preview.innerHTML = `<div class="empty-state">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
             <p>Start filling in details to see your banner</p>
@@ -233,12 +247,8 @@ function updatePreview() {
         return;
     }
 
-    // Collect all headshots (primary + additional)
-    const allHeadshots = [];
-    if (currentHeadshotUrl) allHeadshots.push({ url: currentHeadshotUrl, name: speakerName });
-    additionalSpeakers.forEach(s => {
-        if (s.headshotUrl) allHeadshots.push({ url: s.headshotUrl, name: s.name });
-    });
+    // Collect all headshots
+    const allHeadshots = speakers.filter(s => s.headshotUrl).map(s => ({ url: s.headshotUrl, name: s.name }));
 
     const hasHeadshots = allHeadshots.length > 0;
     const contentMaxWidth = hasHeadshots ? '350px' : '520px';
@@ -265,7 +275,6 @@ function updatePreview() {
         speakerHtml = `<div class="banner-headshots-area">${headshotItems}</div>`;
     }
 
-    const allSpeakerNames = [speakerName, ...additionalSpeakers.map(s => s.name).filter(Boolean)].filter(Boolean);
     const dateTimeStr = [date, time].filter(Boolean).join(' | ');
     const displayLabel = seriesLabel || series.label;
 
@@ -317,8 +326,15 @@ async function downloadBanner() {
         const format = document.getElementById('exportFormat').value;
         const scale = parseInt(document.getElementById('exportQuality').value);
 
+        // Always export at 1200x842
+        const exportWidth = 1200;
+        const exportHeight = 842;
+        const scaleX = exportWidth / 600;
+        const scaleY = exportHeight / bannerEl.offsetHeight;
+        const exportScale = Math.max(scaleX, scaleY) * scale;
+
         const canvas = await html2canvas(bannerEl, {
-            scale: scale,
+            scale: exportScale,
             useCORS: true,
             allowTaint: true,
             backgroundColor: null,
@@ -327,9 +343,16 @@ async function downloadBanner() {
             height: bannerEl.offsetHeight
         });
 
+        // Resize to exact 1200x842
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = 1200;
+        finalCanvas.height = 842;
+        const ctx = finalCanvas.getContext('2d');
+        ctx.drawImage(canvas, 0, 0, 1200, 842);
+
         const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
         const quality = format === 'jpeg' ? QUALITY_PRESETS[scale] : undefined;
-        const dataUrl = canvas.toDataURL(mimeType, quality);
+        const dataUrl = finalCanvas.toDataURL(mimeType, quality);
 
         const link = document.createElement('a');
         const title = document.getElementById('webinarTitle').value.trim() || 'webinar-banner';
