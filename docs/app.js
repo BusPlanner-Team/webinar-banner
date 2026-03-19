@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     bindInputListeners();
     bindSeriesSelector();
     bindUploadZones();
-    bindBgTypeToggle();
     bindColorSync();
     bindRangeLabels();
     bindAdditionalSpeakers();
@@ -32,7 +31,8 @@ function bindInputListeners() {
         'webinarTitle', 'webinarSubtitle', 'webinarDate', 'webinarTime',
         'webinarPlatform', 'speakerName', 'speakerTitle', 'ctaText',
         'accentColor', 'textColor', 'ctaBgColor', 'ctaTextColor',
-        'titleSize', 'subtitleSize', 'detailsSize', 'overlayOpacity'
+        'titleSize', 'subtitleSize', 'detailsSize', 'overlayOpacity',
+        'seriesLabel'
     ];
     inputs.forEach(id => {
         const el = document.getElementById(id);
@@ -47,6 +47,8 @@ function bindSeriesSelector() {
             document.querySelectorAll('.series-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             activeSeries = btn.dataset.series;
+            // Update the editable label to match the selected series default
+            document.getElementById('seriesLabel').value = SERIES_CONFIG[activeSeries].label;
             updatePreview();
         });
     });
@@ -98,16 +100,6 @@ function setupUpload(zoneId, inputId, previewId, clearId, onLoad) {
     }
 }
 
-// ===== Background Type Toggle =====
-function bindBgTypeToggle() {
-    document.querySelectorAll('input[name="bgType"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            document.getElementById('bgImageUploadSection').hidden = radio.value !== 'image' || !radio.checked;
-            updatePreview();
-        });
-    });
-}
-
 // ===== Color Sync =====
 function bindColorSync() {
     ['accent', 'text', 'ctaBg', 'ctaText'].forEach(name => {
@@ -127,13 +119,19 @@ function bindRangeLabels() {
         const label = document.getElementById(id + 'Val');
         el.addEventListener('input', () => { label.textContent = el.value + 'px'; });
     });
+    // Overlay opacity label
+    const opEl = document.getElementById('overlayOpacity');
+    const opLabel = document.getElementById('overlayOpacityVal');
+    if (opEl && opLabel) {
+        opEl.addEventListener('input', () => { opLabel.textContent = opEl.value + '%'; });
+    }
 }
 
 // ===== Additional Speakers =====
 function bindAdditionalSpeakers() {
     document.getElementById('addSpeakerBtn').addEventListener('click', () => {
         const id = Date.now();
-        additionalSpeakers.push({ id, name: '', title: '' });
+        additionalSpeakers.push({ id, name: '', title: '', headshotUrl: null });
         renderAdditionalSpeakers();
     });
 }
@@ -145,6 +143,12 @@ function renderAdditionalSpeakers() {
             <div class="speaker-fields">
                 <input type="text" placeholder="Speaker name" value="${escapeHtml(s.name)}" data-field="name">
                 <input type="text" placeholder="Speaker title" value="${escapeHtml(s.title)}" data-field="title">
+                <div class="mini-upload-zone" data-id="${s.id}">
+                    ${s.headshotUrl
+                        ? `<img src="${s.headshotUrl}" class="mini-upload-preview"><button class="mini-clear-btn">&times;</button>`
+                        : `<span class="mini-upload-label">+ Headshot</span>`}
+                    <input type="file" accept="image/*" hidden>
+                </div>
             </div>
             <button class="remove-speaker-btn" title="Remove">&times;</button>
         </div>
@@ -152,7 +156,7 @@ function renderAdditionalSpeakers() {
 
     container.querySelectorAll('.speaker-entry').forEach(entry => {
         const id = parseInt(entry.dataset.id);
-        entry.querySelectorAll('input').forEach(input => {
+        entry.querySelectorAll('input[type="text"]').forEach(input => {
             input.addEventListener('input', () => {
                 const speaker = additionalSpeakers.find(s => s.id === id);
                 if (speaker) speaker[input.dataset.field] = input.value;
@@ -164,6 +168,36 @@ function renderAdditionalSpeakers() {
             renderAdditionalSpeakers();
             updatePreview();
         });
+
+        // Mini headshot upload
+        const miniZone = entry.querySelector('.mini-upload-zone');
+        const miniInput = miniZone.querySelector('input[type="file"]');
+        const miniClear = miniZone.querySelector('.mini-clear-btn');
+
+        miniZone.addEventListener('click', (e) => {
+            if (e.target.classList.contains('mini-clear-btn')) return;
+            miniInput.click();
+        });
+        miniInput.addEventListener('change', () => {
+            if (!miniInput.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const speaker = additionalSpeakers.find(s => s.id === id);
+                if (speaker) speaker.headshotUrl = e.target.result;
+                renderAdditionalSpeakers();
+                updatePreview();
+            };
+            reader.readAsDataURL(miniInput.files[0]);
+        });
+        if (miniClear) {
+            miniClear.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const speaker = additionalSpeakers.find(s => s.id === id);
+                if (speaker) speaker.headshotUrl = null;
+                renderAdditionalSpeakers();
+                updatePreview();
+            });
+        }
     });
 }
 
@@ -178,6 +212,7 @@ function updatePreview() {
     const speakerName = document.getElementById('speakerName').value.trim();
     const speakerTitle = document.getElementById('speakerTitle').value.trim();
     const ctaText = document.getElementById('ctaText').value.trim();
+    const seriesLabel = document.getElementById('seriesLabel').value.trim();
 
     const textColor = document.getElementById('textColor').value;
     const accentColor = document.getElementById('accentColor').value;
@@ -187,7 +222,6 @@ function updatePreview() {
     const subtitleSize = document.getElementById('subtitleSize').value;
     const detailsSize = document.getElementById('detailsSize').value;
 
-    const bgType = document.querySelector('input[name="bgType"]:checked').value;
     const overlayOpacity = document.getElementById('overlayOpacity').value / 100;
     const series = SERIES_CONFIG[activeSeries];
 
@@ -199,36 +233,48 @@ function updatePreview() {
         return;
     }
 
-    const hasHeadshot = currentHeadshotUrl && additionalSpeakers.length === 0;
-    const contentMaxWidth = hasHeadshot ? '370px' : '520px';
+    // Collect all headshots (primary + additional)
+    const allHeadshots = [];
+    if (currentHeadshotUrl) allHeadshots.push({ url: currentHeadshotUrl, name: speakerName });
+    additionalSpeakers.forEach(s => {
+        if (s.headshotUrl) allHeadshots.push({ url: s.headshotUrl, name: s.name });
+    });
 
+    const hasHeadshots = allHeadshots.length > 0;
+    const contentMaxWidth = hasHeadshots ? '350px' : '520px';
+
+    // Background
     let bgStyle = '';
-    let overlayStyle = '';
-    if (bgType === 'image' && currentBgImageUrl) {
+    let overlayHtml = '';
+    if (currentBgImageUrl) {
         bgStyle = `background-image: url('${currentBgImageUrl}'); background-size: cover; background-position: center;`;
-        overlayStyle = `background: linear-gradient(135deg, ${series.color}ee ${overlayOpacity * 100}%, ${series.color}99 100%);`;
+        overlayHtml = `<div class="banner-overlay" style="background: linear-gradient(135deg, ${series.color}ee ${overlayOpacity * 100}%, ${series.color}99 100%);"></div>`;
     } else {
         bgStyle = `background: ${series.gradient};`;
     }
 
+    // Oval headshots with gold arch
     let speakerHtml = '';
-    if (hasHeadshot) {
-        speakerHtml = `
-            <div class="banner-speaker-area">
-                <div class="banner-speaker-overlay" style="background: linear-gradient(to right, ${series.color}, transparent);"></div>
-                <img class="banner-speaker-img" src="${currentHeadshotUrl}" alt="${escapeHtml(speakerName)}">
-            </div>`;
+    if (hasHeadshots) {
+        const headshotItems = allHeadshots.map(h => `
+            <div class="banner-headshot-item">
+                <div class="banner-headshot-arch" style="background: ${accentColor};"></div>
+                <img class="banner-headshot-oval" src="${h.url}" alt="${escapeHtml(h.name)}">
+            </div>
+        `).join('');
+        speakerHtml = `<div class="banner-headshots-area">${headshotItems}</div>`;
     }
 
     const allSpeakerNames = [speakerName, ...additionalSpeakers.map(s => s.name).filter(Boolean)].filter(Boolean);
     const dateTimeStr = [date, time].filter(Boolean).join(' | ');
+    const displayLabel = seriesLabel || series.label;
 
     preview.innerHTML = `
         <div class="banner-inner">
             <div class="banner-bg" style="${bgStyle}"></div>
-            ${bgType === 'image' && currentBgImageUrl ? `<div class="banner-overlay" style="${overlayStyle}"></div>` : ''}
+            ${overlayHtml}
             <div class="banner-content" style="color: ${textColor}; max-width: ${contentMaxWidth};">
-                <div class="banner-series-tag" style="color: ${accentColor};">${escapeHtml(series.label)}</div>
+                <div class="banner-series-tag" style="color: ${accentColor};">${escapeHtml(displayLabel)}</div>
                 ${title ? `<div class="banner-title" style="font-size: ${titleSize}px;">${escapeHtml(title)}</div>` : ''}
                 ${subtitle ? `<div class="banner-subtitle" style="font-size: ${subtitleSize}px;">${escapeHtml(subtitle)}</div>` : ''}
                 <div class="banner-details" style="font-size: ${detailsSize}px;">

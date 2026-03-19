@@ -31,6 +31,10 @@
                     <button class="series-btn" data-series="can-client" data-color="#4A148C">CAN Client Session</button>
                     <button class="series-btn" data-series="forum" data-color="#B71C1C">BusPlanner Forum</button>
                 </div>
+                <label>
+                    <span>Series Label (shown on banner)</span>
+                    <input type="text" id="seriesLabel" placeholder="e.g., Prospect Webinar" value="Prospect Webinar">
+                </label>
             </section>
 
             <section class="control-group">
@@ -84,35 +88,26 @@
 
             <section class="control-group">
                 <h3>Additional Speakers <span class="optional-tag">Optional</span></h3>
+                <p class="hint-text">Add speakers to show oval headshots with gold arches on the banner</p>
                 <div id="additionalSpeakers"></div>
                 <button id="addSpeakerBtn" class="add-btn">+ Add Speaker</button>
             </section>
 
             <section class="control-group">
-                <h3>Background</h3>
-                <div class="bg-options">
-                    <label class="radio-label">
-                        <input type="radio" name="bgType" value="gradient" checked> Gradient (auto from series)
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="bgType" value="image"> Custom Image
-                    </label>
-                </div>
-                <div id="bgImageUploadSection" hidden>
-                    <div class="upload-zone" id="bgImageZone">
-                        <div class="upload-placeholder">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                            <span>Drop background image or click to upload</span>
-                        </div>
-                        <input type="file" id="bgImageUpload" accept="image/*" hidden>
-                        <img id="bgImagePreview" class="upload-preview" hidden>
-                        <button id="clearBgImage" class="clear-btn" hidden>Clear</button>
+                <h3>Background Image <span class="optional-tag">Optional — uses series gradient if empty</span></h3>
+                <div class="upload-zone" id="bgImageZone">
+                    <div class="upload-placeholder">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        <span>Drop background image or click to upload</span>
                     </div>
-                    <label>
-                        <span>Overlay Opacity</span>
-                        <input type="range" id="overlayOpacity" min="0" max="100" value="70">
-                    </label>
+                    <input type="file" id="bgImageUpload" accept="image/*" hidden>
+                    <img id="bgImagePreview" class="upload-preview" hidden>
+                    <button id="clearBgImage" class="clear-btn" hidden>Clear</button>
                 </div>
+                <label>
+                    <span>Overlay Opacity: <strong id="overlayOpacityVal">70%</strong></span>
+                    <input type="range" id="overlayOpacity" min="0" max="100" value="70">
+                </label>
             </section>
 
             <section class="control-group">
